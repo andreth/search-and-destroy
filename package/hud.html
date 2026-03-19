@@ -1,0 +1,415 @@
+<!--
+Structure proposée
+src/
+  components/
+    layout/
+      CommandTopBar.vue
+      MilitarySideNav.vue
+      TacticalFooterBar.vue
+    ui/
+      BunkerPanel.vue
+      TacticalMapPanel.vue
+      MilitaryInput.vue
+      MilitaryButton.vue
+      StatList.vue
+      UnitGrid.vue
+    pages/
+      LoginSection.vue
+      BaseSection.vue
+      MissionsSection.vue
+      ArmySection.vue
+      TechSection.vue
+  App.vue
+-->
+
+<!-- src/components/ui/BunkerPanel.vue -->
+<template>
+  <section class="bunker-panel" :class="paddingClass">
+    <slot />
+  </section>
+</template>
+
+<script setup>
+defineProps({
+  paddingClass: { type: String, default: 'p-4' },
+})
+</script>
+
+<style scoped>
+.bunker-panel {
+  background: linear-gradient(180deg, #1a1f1d, #0a0d0c);
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 30px rgba(0,0,0,0.8);
+}
+</style>
+
+<!-- src/components/ui/MilitaryInput.vue -->
+<template>
+  <input :type="type" :placeholder="placeholder" class="military-input" />
+</template>
+
+<script setup>
+defineProps({
+  type: { type: String, default: 'text' },
+  placeholder: { type: String, default: '' },
+})
+</script>
+
+<style scoped>
+.military-input {
+  width: 100%;
+  background: #0a0d0c;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 12px;
+  color: #e5e7eb;
+}
+.military-input::placeholder {
+  color: #6b7280;
+}
+</style>
+
+<!-- src/components/ui/MilitaryButton.vue -->
+<template>
+  <button class="military-button" :class="variantClass">
+    <slot />
+  </button>
+</template>
+
+<script setup>
+const props = defineProps({
+  variant: { type: String, default: 'primary' },
+})
+
+const variantClass = props.variant === 'secondary' ? 'military-button-secondary' : 'military-button-primary'
+</script>
+
+<style scoped>
+.military-button {
+  width: 100%;
+  padding: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.military-button:hover { transform: translateY(-1px); }
+.military-button:active { transform: translateY(1px); }
+.military-button-primary {
+  background: #1f2a24;
+  color: #d1fae5;
+}
+.military-button-secondary {
+  background: #111;
+  color: #d1d5db;
+}
+</style>
+
+<!-- src/components/ui/TacticalMapPanel.vue -->
+<template>
+  <div class="map">
+    <div class="grid-overlay"></div>
+    <div class="point a"></div>
+    <div class="point b"></div>
+    <div class="point c"></div>
+
+    <div class="curve curve-1"></div>
+    <div class="curve curve-2"></div>
+
+    <div class="shot-line shot-1"></div>
+    <div class="shot-line shot-2"></div>
+
+    <div class="explosion explosion-1"></div>
+    <div class="explosion explosion-2"></div>
+  </div>
+</template>
+
+<style scoped>
+.map {
+  position: relative;
+  height: 240px;
+  background: #050505;
+  overflow: hidden;
+}
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+.point {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  border-radius: 9999px;
+}
+.a { top: 28%; left: 20%; }
+.b { top: 58%; left: 68%; }
+.c { top: 36%; left: 48%; }
+.curve {
+  position: absolute;
+  width: 220px;
+  height: 110px;
+  border-bottom: 2px dashed #4ade80;
+  border-radius: 50%;
+  animation: curve 2.4s infinite;
+  opacity: 0;
+}
+.curve-1 { top: 25%; left: 18%; }
+.curve-2 { top: 30%; left: 38%; transform: rotate(22deg); animation-delay: 1s; }
+.shot-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #facc15, transparent);
+  transform-origin: left;
+  animation: shoot 1.8s infinite ease-in-out;
+  opacity: 0;
+}
+.shot-1 { top: 30%; left: 21%; width: 170px; transform: rotate(18deg); }
+.shot-2 { top: 42%; left: 49%; width: 140px; transform: rotate(38deg); animation-delay: 0.8s; }
+.explosion {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #facc15, transparent);
+  animation: explode 1.2s infinite ease-out;
+}
+.explosion-1 { top: 57%; left: 68%; }
+.explosion-2 { top: 35%; left: 48%; animation-delay: 0.6s; }
+@keyframes curve { 0% { opacity: 0; } 50% { opacity: 0.8; } 100% { opacity: 0; } }
+@keyframes shoot { 0% { opacity: 0; transform: scaleX(0); } 50% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(0); } }
+@keyframes explode { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
+</style>
+
+<!-- src/components/ui/StatList.vue -->
+<template>
+  <div class="space-y-2 text-xs">
+    <div v-for="item in items" :key="item" class="border-b border-white/5 pb-2">
+      {{ item }}
+    </div>
+  </div>
+</template>
+
+<script setup>
+defineProps({
+  items: { type: Array, default: () => [] },
+})
+</script>
+
+<!-- src/components/ui/UnitGrid.vue -->
+<template>
+  <div class="grid gap-4" :class="columnsClass">
+    <div v-for="item in items" :key="item" class="unit-card">
+      {{ item }}
+    </div>
+  </div>
+</template>
+
+<script setup>
+const props = defineProps({
+  items: { type: Array, default: () => [] },
+  columns: { type: String, default: '4' },
+})
+
+const columnsClass = props.columns === '3' ? 'grid-cols-3' : 'grid-cols-4'
+</script>
+
+<style scoped>
+.unit-card {
+  background: #111;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
+}
+</style>
+
+<!-- src/components/layout/CommandTopBar.vue -->
+<template>
+  <header class="flex justify-between items-center px-6 py-3 border-b border-white/10 bg-[#111]">
+    <div class="text-sm tracking-widest uppercase text-green-400">Command Center</div>
+    <div class="flex gap-6 text-xs">
+      <div v-for="r in resources" :key="r.label" class="flex gap-2 items-center">
+        <span class="text-green-400">●</span>
+        <span>{{ r.value }}</span>
+      </div>
+    </div>
+  </header>
+</template>
+
+<script setup>
+defineProps({
+  resources: { type: Array, default: () => [] },
+})
+</script>
+
+<!-- src/components/layout/MilitarySideNav.vue -->
+<template>
+  <aside class="w-24 bg-[#0f1312] border-r border-white/10 flex flex-col items-center py-6 gap-6">
+    <button
+      v-for="item in items"
+      :key="item"
+      class="text-xs uppercase tracking-wider text-gray-400 hover:text-green-400"
+    >
+      {{ item }}
+    </button>
+  </aside>
+</template>
+
+<script setup>
+defineProps({
+  items: { type: Array, default: () => [] },
+})
+</script>
+
+<!-- src/components/layout/TacticalFooterBar.vue -->
+<template>
+  <footer class="grid grid-cols-5 gap-4">
+    <button v-for="action in actions" :key="action" class="footer-btn">
+      {{ action }}
+    </button>
+  </footer>
+</template>
+
+<script setup>
+defineProps({
+  actions: { type: Array, default: () => [] },
+})
+</script>
+
+<style scoped>
+.footer-btn {
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+</style>
+
+<!-- src/components/pages/LoginSection.vue -->
+<template>
+  <section class="grid grid-cols-2 gap-6">
+    <BunkerPanel paddingClass="p-6">
+      <h2 class="text-lg mb-4 tracking-widest text-green-400">Connexion</h2>
+      <div class="space-y-4">
+        <MilitaryInput placeholder="Identifiant" />
+        <MilitaryInput type="password" placeholder="Mot de passe" />
+        <MilitaryButton>Se connecter</MilitaryButton>
+      </div>
+    </BunkerPanel>
+
+    <BunkerPanel paddingClass="p-4">
+      <TacticalMapPanel />
+    </BunkerPanel>
+  </section>
+</template>
+
+<script setup>
+import BunkerPanel from '../ui/BunkerPanel.vue'
+import MilitaryInput from '../ui/MilitaryInput.vue'
+import MilitaryButton from '../ui/MilitaryButton.vue'
+import TacticalMapPanel from '../ui/TacticalMapPanel.vue'
+</script>
+
+<!-- src/components/pages/BaseSection.vue -->
+<template>
+  <section class="grid grid-cols-3 gap-6">
+    <BunkerPanel paddingClass="p-4 col-span-2">
+      <h3 class="text-sm uppercase text-gray-400 mb-3">Base militaire</h3>
+      <div class="h-64 bg-[#111] flex items-center justify-center text-gray-500">Vue base (placeholder)</div>
+    </BunkerPanel>
+
+    <BunkerPanel paddingClass="p-4">
+      <h3 class="text-sm uppercase text-gray-400 mb-3">Missions</h3>
+      <StatList :items="missions" />
+    </BunkerPanel>
+  </section>
+</template>
+
+<script setup>
+import BunkerPanel from '../ui/BunkerPanel.vue'
+import StatList from '../ui/StatList.vue'
+
+defineProps({
+  missions: { type: Array, default: () => [] },
+})
+</script>
+
+<!-- src/components/pages/ArmySection.vue -->
+<template>
+  <BunkerPanel paddingClass="p-4">
+    <h3 class="text-sm uppercase text-gray-400 mb-3">Armée</h3>
+    <UnitGrid :items="units" columns="4" />
+  </BunkerPanel>
+</template>
+
+<script setup>
+import BunkerPanel from '../ui/BunkerPanel.vue'
+import UnitGrid from '../ui/UnitGrid.vue'
+
+defineProps({
+  units: { type: Array, default: () => [] },
+})
+</script>
+
+<!-- src/components/pages/TechSection.vue -->
+<template>
+  <BunkerPanel paddingClass="p-4">
+    <h3 class="text-sm uppercase text-gray-400 mb-3">Technologie</h3>
+    <UnitGrid :items="tech" columns="3" />
+  </BunkerPanel>
+</template>
+
+<script setup>
+import BunkerPanel from '../ui/BunkerPanel.vue'
+import UnitGrid from '../ui/UnitGrid.vue'
+
+defineProps({
+  tech: { type: Array, default: () => [] },
+})
+</script>
+
+<!-- src/App.vue -->
+<template>
+  <div class="min-h-screen bg-[#0a0d0c] text-gray-200 font-mono">
+    <CommandTopBar :resources="resources" />
+
+    <div class="flex">
+      <MilitarySideNav :items="menu" />
+
+      <main class="flex-1 p-6 space-y-6">
+        <LoginSection />
+        <BaseSection :missions="missions" />
+        <ArmySection :units="units" />
+        <TechSection :tech="tech" />
+        <TacticalFooterBar :actions="actions" />
+      </main>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import CommandTopBar from './components/layout/CommandTopBar.vue'
+import MilitarySideNav from './components/layout/MilitarySideNav.vue'
+import TacticalFooterBar from './components/layout/TacticalFooterBar.vue'
+import LoginSection from './components/pages/LoginSection.vue'
+import BaseSection from './components/pages/BaseSection.vue'
+import ArmySection from './components/pages/ArmySection.vue'
+import TechSection from './components/pages/TechSection.vue'
+
+const resources = [
+  { label: 'Acier', value: '1.2M' },
+  { label: 'Pétrole', value: '800K' },
+  { label: 'Uranium', value: '2.1K' },
+]
+
+const menu = ['Base', 'Armée', 'Carte', 'Tech']
+const missions = ['Renforcer bunker', 'Déployer unité', 'Recherche avancée']
+const units = ['Tank', 'Drone', 'Infanterie', 'AA']
+const tech = ['Radar', 'Blindage', 'IA']
+const actions = ['Construire', 'Rechercher', 'Missions', 'Escadron', 'Dépôt']
+</script>
